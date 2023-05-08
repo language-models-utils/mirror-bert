@@ -75,7 +75,8 @@ class MirrorBERT(object):
         elif agg_mode == "mean": # including padded tokens
             query_embed = last_hidden_state.mean(1)  
         elif agg_mode == "mean_std":
-            query_embed = (last_hidden_state * query_toks['attention_mask'].unsqueeze(-1)).sum(1) / query_toks['attention_mask'].sum(-1).unsqueeze(-1)
+            query_embed = (last_hidden_state * sent_toks_cuda['attention_mask'].unsqueeze(-1)).sum(1) / sent_toks_cuda[
+                'attention_mask'].sum(-1).unsqueeze(-1)
         else:
             raise NotImplementedError()
         return query_embed
