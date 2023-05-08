@@ -81,13 +81,13 @@ class MirrorBERT(object):
             raise NotImplementedError()
         return query_embed
 
-    def get_embeddings(self, sentences, batch_size=1024, max_length=50, agg_mode="cls"):
+    def get_embeddings(self, sentences, batch_size=1024, max_length=50, agg_mode="cls", disable_tqdm: bool = False):
         """
         Compute embeddings from a list of sentence.
         """
         embedding_table = []
         with torch.no_grad():
-            for start in tqdm(range(0, len(sentences), batch_size)):
+            for start in tqdm(range(0, len(sentences), batch_size), disable=disable_tqdm):
                 end = min(start + batch_size, len(sentences))
                 batch = sentences[start:end]
                 batch_embedding = self.encode(batch, max_length=max_length, agg_mode=agg_mode)
