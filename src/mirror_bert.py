@@ -22,10 +22,10 @@ class MirrorBERT(object):
     Wrapper class for MirrorBERT 
     """
 
-    def __init__(self):
+    def __init__(self, use_cuda: bool =True):
         self.tokenizer = None
         self.encoder = None
-        self.use_cuda = False
+        self.use_cuda = use_cuda
 
     def get_encoder(self):
         assert (self.encoder is not None)
