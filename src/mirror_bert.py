@@ -25,6 +25,7 @@ class MirrorBERT(object):
     def __init__(self):
         self.tokenizer = None
         self.encoder = None
+        self.use_cuda = False
 
     def get_encoder(self):
         assert (self.encoder is not None)
@@ -49,13 +50,16 @@ class MirrorBERT(object):
         self.tokenizer = AutoTokenizer.from_pretrained(path, 
                 use_fast=True, do_lower_case=lowercase)
         self.encoder = AutoModel.from_pretrained(path)
-        if use_cuda:
+
+        self.use_cuda = use_cuda
+        if self.use_cuda:
             self.encoder = self.encoder.cuda()
         if not return_model:
             return
         return self.encoder, self.tokenizer
     
     def encode(self, sentences, max_length=50, agg_mode="cls"):
+
         sent_toks = self.tokenizer.batch_encode_plus(
             list(sentences), 
             max_length=max_length, 
@@ -63,11 +67,16 @@ class MirrorBERT(object):
             truncation=True,
             add_special_tokens=True,
             return_tensors="pt")
-        sent_toks_cuda = {}
+
+        sent_toks_device = {}
         for k,v in sent_toks.items():
-            sent_toks_cuda[k] = v.cuda()
+            if self.use_cuda:
+                sent_toks_device[k] = v.cuda()
+            else:
+                sent_toks_device[k] = v
+
         with torch.no_grad():
-            outputs = self.encoder(**sent_toks_cuda, return_dict=True, output_hidden_states=False)
+            outputs = self.encoder(**sent_toks_device, return_dict=True, output_hidden_states=False)
         last_hidden_state = outputs.last_hidden_state
 
         if agg_mode=="cls":
@@ -75,7 +84,7 @@ class MirrorBERT(object):
         elif agg_mode == "mean": # including padded tokens
             query_embed = last_hidden_state.mean(1)  
         elif agg_mode == "mean_std":
-            query_embed = (last_hidden_state * sent_toks_cuda['attention_mask'].unsqueeze(-1)).sum(1) / sent_toks_cuda[
+            query_embed = (last_hidden_state * sent_toks_device['attention_mask'].unsqueeze(-1)).sum(1) / sent_toks_device[
                 'attention_mask'].sum(-1).unsqueeze(-1)
         else:
             raise NotImplementedError()
@@ -95,5 +104,3 @@ class MirrorBERT(object):
                 embedding_table.append(batch_embedding)
         embedding_table = torch.cat(embedding_table, dim=0)
         return embedding_table
-
-
