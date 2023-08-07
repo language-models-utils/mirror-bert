@@ -10,7 +10,6 @@ import argparse
 import numpy as np
 import torch
 import torch.optim as optim
-from torch.optim import Adam, Adadelta, Adamax, Adagrad, RMSprop, Rprop, SGD
 from torch.cuda.amp import autocast, GradScaler
 from pytorch_metric_learning import samplers
 from transformers import AutoTokenizer, AutoModel
@@ -19,10 +18,10 @@ import wandb
 wandb.init(project="mirror-bert")
 
 # import from local
-from src.mirror_bert import MirrorBERT
-from src.data_loader import ContrastiveLearningDataset
-from src.contrastive_learning import ContrastiveLearningPairwise
-from src.drophead import set_drophead
+from src.abi2le_mirror_bert_colinglab.mirror_bert import MirrorBERT
+from src.abi2le_mirror_bert_colinglab.data_loader import ContrastiveLearningDataset
+from src.abi2le_mirror_bert_colinglab.contrastive_learning import ContrastiveLearningPairwise
+from src.abi2le_mirror_bert_colinglab.drophead import set_drophead
 
 LOGGER = logging.getLogger()
 
